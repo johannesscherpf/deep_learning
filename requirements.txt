@@ -1,4 +1,3 @@
---extra-index-url https://download.pytorch.org/whl/cpu
 conllu==6.0.0
 evaluate==0.4.6
 pandas==2.3.2

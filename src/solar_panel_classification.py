@@ -20,9 +20,9 @@ data_Y = torch.as_tensor(data_Y,dtype=torch.long)
 
 # Train-Test-Split
 X_train, X_test, y_train, y_test = train_test_split(
-    data_X, data_Y, test_size=0.2, random_state=42)
+    data_X, data_Y, test_size=0.01, random_state=42)
 
-X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.01, random_state=42)
 
 # Netzwerkarchitektur definieren
 class Net(nn.Module):
@@ -31,11 +31,11 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(60, 256)
         self.bn1 = nn.BatchNorm1d(256)
         self.relu = nn.ReLU()
-        self.dropout1 = nn.Dropout(0.3)
+        self.dropout1 = nn.Dropout(0.2)
         self.fc2 = nn.Linear(256, 256)
         self.bn2 = nn.BatchNorm1d(256)
         self.relu2 = nn.ReLU()
-        self.dropout2 = nn.Dropout(0.3)
+        self.dropout2 = nn.Dropout(0.2)
         self.fc3 = nn.Linear(256, 9)
 
     def forward(self, x):
@@ -56,7 +56,7 @@ class Net(nn.Module):
 # Parameter festlegen
 net = Net()
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(net.parameters(), lr=0.001, weight_decay=1e-4)
+optimizer = optim.Adam(net.parameters(), weight_decay=1e-4)
 batch_size = 16
 
 # Dataset laden
@@ -131,3 +131,5 @@ with torch.no_grad():
 
 test_accuracy = 100 * test_correct / test_total
 print(f"✅ Test Loss: {test_loss/len(testloader):.4f} | Test Accuracy: {test_accuracy:.2f}%")
+
+torch.save(net, '../models/solar.pth')

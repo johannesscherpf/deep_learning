@@ -14,6 +14,12 @@ data = data.dropna()
 data['t']=data['t']-1
 data_X = data.drop(columns = ['t'])
 data_X = (data_X - data_X.mean()) / data_X.std()
+
+mean = data_X.mean(axis=0)
+std = data_X.std(axis=0)
+np.save('mean.npy', mean)
+np.save('std.npy', std)
+
 data_X = torch.from_numpy(data_X.values).float()
 data_Y = data['t']
 data_Y = torch.as_tensor(data_Y,dtype=torch.long)
@@ -70,7 +76,7 @@ test_dataset = TensorDataset(X_test, y_test)
 testloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
 
-num_epochs=20
+num_epochs=100
 
 # Training starten
 for epoch in range(num_epochs):
@@ -132,4 +138,4 @@ with torch.no_grad():
 test_accuracy = 100 * test_correct / test_total
 print(f"✅ Test Loss: {test_loss/len(testloader):.4f} | Test Accuracy: {test_accuracy:.2f}%")
 
-torch.save(net, '../models/solar.pth')
+torch.save(net.state_dict(), '../models/solar_weights2.pth')

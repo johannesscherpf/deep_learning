@@ -143,3 +143,4 @@ for epoch in range(num_epochs):
     model.eval()
     val_loss = calculatevalloss(model, valdataloader)
     print(f'Epoch [{epoch + 1}/{num_epochs}], Train Loss: {total_loss:.4f}, Val Loss: {val_loss:.4f}')
+    #

@@ -9,6 +9,12 @@ import torch.optim as optim
 from sklearn.model_selection import train_test_split
 
 
+# Check if CUDA (GPU support) is available
+is_cuda_available = torch.cuda.is_available()
+print(f"CUDA Available: {is_cuda_available}")
+print(torch.cuda.is_available())
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 data = pd.read_csv('../data/rnn_train.csv')
 
 def create_sequences(data, stride, window_size, target_size):
@@ -39,8 +45,6 @@ def split(sequences, targets, test_size=0.2):
     targets = np.array(targets)
     trainsequences, testsequences, traintargets, testtargets = train_test_split(sequences, targets, test_size=test_size, random_state=42)
     return trainsequences, testsequences, traintargets, testtargets
-
-
 
 sequences, targets = sequences_for_all_decades(data, 1, 90, 7)
 trainsequences, testsequences, traintargets, testtargets = split(sequences, targets, test_size=0.2)
@@ -143,4 +147,3 @@ for epoch in range(num_epochs):
     model.eval()
     val_loss = calculatevalloss(model, valdataloader)
     print(f'Epoch [{epoch + 1}/{num_epochs}], Train Loss: {total_loss:.4f}, Val Loss: {val_loss:.4f}')
-    #

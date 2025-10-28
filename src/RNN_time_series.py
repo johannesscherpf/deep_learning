@@ -41,9 +41,11 @@ def sequences_for_all_decades(data, stride, window_size, target_size):
     return np.array(sequences), np.array(targets)
 
 def split(sequences, targets, test_size=0.2):
+    test_size=int(test_size*len(sequences))
     sequences = np.array(sequences)
     targets = np.array(targets)
-    trainsequences, testsequences, traintargets, testtargets = train_test_split(sequences, targets, test_size=test_size, random_state=42)
+    trainsequences, testsequences = sequences[:-test_size], sequences[-test_size:]
+    traintargets, testtargets = targets[:-test_size],  targets[-test_size:]
     return trainsequences, testsequences, traintargets, testtargets
 
 sequences, targets = sequences_for_all_decades(data, 1, 90, 7)
@@ -88,7 +90,7 @@ class LSTM(nn.Module):
 # Hyperparameters
 input_size = 1
 hidden_size = 10
-num_layers = 3
+num_layers = 5
 output_size = 7
 batch_size = 64
 seq_len = 90

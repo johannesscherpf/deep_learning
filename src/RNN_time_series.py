@@ -4,20 +4,142 @@ import torch.nn as nn
 from sklearn.model_selection import train_test_split
 import numpy as np
 from torch import Tensor
+from torch.utils.data import TensorDataset, DataLoader
+import torch.optim as optim
+from sklearn.model_selection import train_test_split
 
 
 data = pd.read_csv('../data/rnn_train.csv')
-print(data.head())
 
-def create_sequences(data):
+def create_sequences(data, stride, window_size, target_size):
     sequences = []
-    for column in data.columns:
-        sequences.append(list(data[column]))
+    targets=[]
+    for number in range((len(data)-window_size - target_size)//stride):
+        start=number*stride
+        end=start + window_size
+        sequence = data[start:end]
+        target = data[end:end + target_size]
+        targets.append(target)
+        sequences.append(sequence)
+    return sequences, targets
+
+def sequences_for_all_decades(data, stride, window_size, target_size):
+    sequences = []
+    targets=[]
+    for row in range(len(data)):
+        data_copy = data.copy()
+        data_row=data_copy.iloc[row].tolist()
+        x_values, y_values = create_sequences(data_row, stride, window_size, target_size)
+        sequences.extend(x_values)
+        targets.extend(y_values)
+    return np.array(sequences), np.array(targets)
+
+def split(sequences, targets, test_size=0.2):
     sequences = np.array(sequences)
-    return Tensor(sequences)
+    targets = np.array(targets)
+    trainsequences, testsequences, traintargets, testtargets = train_test_split(sequences, targets, test_size=test_size, random_state=42)
+    return trainsequences, testsequences, traintargets, testtargets
 
-sequences = create_sequences(data)
 
-def create_y(df):
-    y = list(data.columns)
-    return y
+
+sequences, targets = sequences_for_all_decades(data, 1, 90, 7)
+trainsequences, testsequences, traintargets, testtargets = split(sequences, targets, test_size=0.2)
+dataset = TensorDataset(Tensor(trainsequences), Tensor(traintargets))
+val_dataset = TensorDataset(Tensor(testsequences), Tensor(testtargets))
+valdataloader = DataLoader(val_dataset, batch_size=64, shuffle=True)
+train_dataloader = DataLoader(dataset, batch_size=64, shuffle=True)
+inputs=train_dataloader
+
+class RNN(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, output_size):
+        super(RNN, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.rnn = nn.RNN(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x):
+        h0 = torch.zeros(5, x.size(0), self.hidden_size).to(x.device)
+        out, _ = self.rnn(x, h0)
+        out = self.fc(out[:, -1, :])
+        return out
+
+class LSTM(nn.Module):
+    def __init__(self, inputsize, hiddensize, numlayers, outputsize):
+        super(LSTM, self).__init__()
+        self.inputsize = inputsize
+        self.hiddensize = hiddensize
+        self.numlayers = numlayers
+        self.outputsize = outputsize
+        self.lstm = nn.LSTM(inputsize, hiddensize, numlayers, batch_first=True)
+        self.fc = nn.Linear(hiddensize, outputsize)
+
+    def forward(self, x):
+        h0 = torch.zeros(self.numlayers, x.size(0), self.hiddensize).to(x.device)
+        c0 = torch.zeros(self.numlayers, x.size(0), self.hiddensize).to(x.device)
+        out, _ = self.lstm(x, (h0, c0))
+        out = self.fc(out[:, -1, :])
+        return out
+
+# Hyperparameters
+input_size = 1
+hidden_size = 10
+num_layers = 3
+output_size = 7
+batch_size = 64
+seq_len = 90
+
+
+# Create the model
+#model = RNN(input_size, hidden_size, num_layers, output_size)
+model = LSTM(input_size, hidden_size, num_layers, output_size)
+
+# Loss function and optimizer
+criterion = nn.MSELoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# Training loop
+num_epochs = 100
+
+"""
+for epoch in range(num_epochs):
+    for batch in train_dataloader:
+        inputs, targets = batch
+        inputs = inputs.view(-1, seq_len, 1)
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, targets)
+        loss.backward()
+        optimizer.step()
+    print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item():.4f}')
+"""
+
+def calculatevalloss(model, val_dataloader):
+    model.eval()
+    val_loss = 0
+    with torch.no_grad():
+        for batch in val_dataloader:
+            inputs, targets = batch
+            inputs = inputs.view(-1, seq_len, 1)
+            outputs = model(inputs)
+            loss = criterion(outputs, targets)
+            val_loss += loss.item()
+    val_loss /= len(valdataloader)
+    return val_loss
+
+for epoch in range(num_epochs):
+    model.train()
+    total_loss = 0
+    for batch in train_dataloader:
+        inputs, targets = batch
+        inputs = inputs.view(-1, seq_len, 1)
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, targets)
+        loss.backward()
+        optimizer.step()
+        total_loss += loss.item()
+    total_loss /= len(train_dataloader)
+    model.eval()
+    val_loss = calculatevalloss(model, valdataloader)
+    print(f'Epoch [{epoch + 1}/{num_epochs}], Train Loss: {total_loss:.4f}, Val Loss: {val_loss:.4f}')

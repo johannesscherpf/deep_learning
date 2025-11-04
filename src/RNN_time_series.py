@@ -40,7 +40,7 @@ def sequences_for_all_decades(data, stride, window_size, target_size):
         targets.extend(y_values)
     return np.array(sequences), np.array(targets)
 
-def split(sequences, targets, test_size=0.2):
+def split(sequences, targets, test_size=0.01):
     test_size=int(test_size*len(sequences))
     sequences = np.array(sequences)
     targets = np.array(targets)
@@ -105,7 +105,7 @@ criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # Training loop
-num_epochs = 100
+num_epochs = 10
 
 """
 for epoch in range(num_epochs):
@@ -149,3 +149,5 @@ for epoch in range(num_epochs):
     model.eval()
     val_loss = calculatevalloss(model, valdataloader)
     print(f'Epoch [{epoch + 1}/{num_epochs}], Train Loss: {total_loss:.4f}, Val Loss: {val_loss:.4f}')
+
+torch.save(model.state_dict(), '../models/rnn.pth')

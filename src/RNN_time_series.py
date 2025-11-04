@@ -97,8 +97,8 @@ seq_len = 90
 
 
 # Create the model
-#model = RNN(input_size, hidden_size, num_layers, output_size)
-model = LSTM(input_size, hidden_size, num_layers, output_size)
+model = RNN(input_size, hidden_size, num_layers, output_size)
+#model = LSTM(input_size, hidden_size, num_layers, output_size)
 
 # Loss function and optimizer
 criterion = nn.MSELoss()
@@ -171,4 +171,4 @@ for epoch in range(num_epochs):
     if early_stopping.call(val_loss):
         break
 
-torch.save(model.state_dict(), '../models/rnn.pth')
+#torch.save(model.state_dict(), '../models/rnn.pth')

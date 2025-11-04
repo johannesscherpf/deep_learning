@@ -40,7 +40,7 @@ def sequences_for_all_decades(data, stride, window_size, target_size):
         targets.extend(y_values)
     return np.array(sequences), np.array(targets)
 
-def split(sequences, targets, test_size=0.01):
+def split(sequences, targets, test_size=0.2):
     test_size=int(test_size*len(sequences))
     sequences = np.array(sequences)
     targets = np.array(targets)
@@ -92,7 +92,7 @@ input_size = 1
 hidden_size = 10
 num_layers = 5
 output_size = 7
-batch_size = 64
+batch_size = 256
 seq_len = 90
 
 
@@ -105,7 +105,7 @@ criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # Training loop
-num_epochs = 10
+num_epochs = 100
 
 """
 for epoch in range(num_epochs):
@@ -119,6 +119,25 @@ for epoch in range(num_epochs):
         optimizer.step()
     print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item():.4f}')
 """
+
+class EarlyStopping:
+    def __init__(self, patience):
+        self.patience = patience
+        self.best_loss = float('inf')
+        self.counter = 0
+
+    def call(self, loss):
+        if loss < self.best_loss:
+            self.best_loss = loss
+            self.counter = 0
+        else:
+            self.counter += 1
+            if self.counter >= self.patience:
+                return True
+        return False
+
+early_stopping = EarlyStopping(10)
+
 
 def calculatevalloss(model, val_dataloader):
     model.eval()
@@ -149,5 +168,7 @@ for epoch in range(num_epochs):
     model.eval()
     val_loss = calculatevalloss(model, valdataloader)
     print(f'Epoch [{epoch + 1}/{num_epochs}], Train Loss: {total_loss:.4f}, Val Loss: {val_loss:.4f}')
+    if early_stopping.call(val_loss):
+        break
 
 torch.save(model.state_dict(), '../models/rnn.pth')

@@ -18,12 +18,11 @@ class LSTM(nn.Module):
 
     def forward(self, x):
         device = torch.device("cpu")
-        h0 = torch.zeros(x.size(0), self.hiddensize).to(device)
-        c0 = torch.zeros(x.size(0), self.hiddensize).to(device)
+        h0 = torch.zeros(self.numlayers, x.size(0), self.hiddensize).to(device)
+        c0 = torch.zeros(self.numlayers, x.size(0), self.hiddensize).to(device)
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
-
 
 class Model:
     def __init__(self):

@@ -3,9 +3,11 @@ evaluate==0.4.6
 pandas==2.3.2
 scikit-learn==1.6.1
 seqeval==1.2.2
-torch==2.7.1
+torch==2.9.1
 transformers==4.56.0
 matplotlib
 tensorflow==2.20.0
 keras==3.10.0
 gymnasium[classic_control]~=1.0.0
+torchaudio
+torchvision

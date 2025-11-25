@@ -117,6 +117,6 @@ for epoch in range(num_epochs):
         correct += (predicted == labels).sum().item()
     val_loss, val_accuracy = calculatevalloss(model, val_dataloader)
     train_accuracy = 100 * correct / total
-    print(f"Training loss = {train_loss / len(train_loader):.4f} | Training Acc: {train_accuracy:.2f}% | Val_loss: {val_loss:.4f} | Val_Acc: {val_accuracy:.2f}%")
+    print(f"Training loss = {train_loss / len(train_loader):.4f} | Training Acc: {train_accuracy:.2f}% | Val_loss: {val_loss:.4f} | Val_Acc: {val_accuracy:.2f}")
 
 torch.save(model.state_dict(), '../models/cnn.pth')

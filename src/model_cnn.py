@@ -22,17 +22,17 @@ class CNN(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(2, 2),  # Output: 8x8
 
-            nn.Conv2d(256, 512, kernel_size=3, padding=1),
+            nn.Conv2d(256, 128, kernel_size=3, padding=1),
             nn.BatchNorm2d(512),
             nn.ReLU(),
             nn.MaxPool2d(2, 2),  # Output: 4x4
             nn.Flatten()
         )
         self.fc_model = nn.Sequential(
-            nn.Linear(512 * 4 * 4, 512),
+            nn.Linear(128 * 4 * 4, 128),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(512, 9)
+            nn.Linear(128, 9)
         )
 
     def forward(self, x):
@@ -53,7 +53,7 @@ class Model:
         model_path = os.path.join(script_dir, 'cnn.pth')
         state_dict = torch.load(model_path, map_location="cpu")
 
-        self.CNN = CNN
+        self.CNN = CNN()
         self.CNN.load_state_dict(state_dict)
         self.CNN.eval()
 

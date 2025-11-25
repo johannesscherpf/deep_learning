@@ -66,32 +66,14 @@ class Model:
         ])
 
     def predict(self, x_test: np.ndarray) -> np.ndarray:
-        """
-        Generates predictions for a batch of images.
+        # Bild transformieren
+        img = self.transform(x_test)
 
-        :param x_test: np.ndarray of shape (n, 32, 32, 3),
-                       where n is the number of images (RGB, 32×32).
-        :return: np.ndarray of shape (n,),
-                 containing the predicted category label strings.
-        """
+        # Batch dimension hinzufügen: (1, 3, H, W)
+        img = img.unsqueeze(0)
 
-        if x_test.ndim != 4 or x_test.shape[-1] != 3:
-            raise ValueError("x_test must have shape (n, 32, 32, 3)")
-
-        # Transform each image → (C, H, W)
-        transformed = [self.transform(img) for img in x_test]
-
-        # Stack into batch → (n, C, H, W)
-        batch = torch.stack(transformed)
-
-        # Run model
         with torch.no_grad():
-            outputs = self.CNN(batch)  # (n, 9)
+            outputs = self.CNN(img)
+            predicted = outputs.cpu().numpy()
 
-            # Get predicted class indices
-            _, preds = torch.max(outputs, dim=1)  # → (n,)
-
-        # Convert indices to label strings
-        labels = np.array([self.categories[i] for i in preds.tolist()])
-
-        return labels
+        return predicted

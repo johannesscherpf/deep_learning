@@ -1,4 +1,8 @@
 import torch
+import torch.nn as nn
+import numpy as np
+from torchvision import transforms
+import os
 
 
 class CNN(nn.Module):
@@ -44,11 +48,22 @@ class Model:
         """
         self.categories = ["airplane", "automobile", "bird", "cat", "deer", "dog", "horse", "ship", "truck"]
 
-    def predict(self, x_test: np.ndarray) -> np.ndarray:
-        x_test = torch.from_numpy(x_test)
-        transform_val = transforms.Compose([transforms.ToTensor(),
-                                            transforms.Normalize((0.4936, 0.4869, 0.4577), (0.2030, 0.2018, 0.2049))])
+        # Gesamtes Modell laden
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        model_path = os.path.join(script_dir, 'cnn.pth')
+        state_dict = torch.load(model_path, map_location="cpu")
 
-        test_dataset = Dataset(x_test, transforms=transform_val)
-        test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=128, shuffle=False)
+        self.CNN = CNN
+        self.CNN.load_state_dict(state_dict)
+        self.CNN.eval()
+
+    def predict(self, x_test: np.ndarray) -> np.ndarray:
+        transform_test = transforms.Compose([transforms.ToTensor(),
+                                            transforms.Normalize((0.4936, 0.4869, 0.4577), (0.2030, 0.2018, 0.2049))])
+        inputs = transform_test(x_test)
+
+        with torch.no_grad():
+            outputs = self.CNN(inputs)
+            predicted = outputs.numpy()
+        return predicted
 

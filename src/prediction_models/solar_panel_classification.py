@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
 
 # Daten laden
-data = pd.read_csv('../data/train.csv')
+data = pd.read_csv('../../data/train.csv')
 data = data.dropna()
 
 # Daten vorverarbeiten

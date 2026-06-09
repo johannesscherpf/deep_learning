@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
 model_name = "deepset/gbert-base"
-file_path = "../data/train.tsv"
+file_path = "../../data/train.tsv"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def read_data(file_path):

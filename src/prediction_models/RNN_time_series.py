@@ -15,7 +15,7 @@ print(f"CUDA Available: {is_cuda_available}")
 print(torch.cuda.is_available())
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-data = pd.read_csv('../data/rnn_train.csv')
+data = pd.read_csv('../../data/rnn_train.csv')
 
 def create_sequences(data, stride, window_size, target_size):
     sequences = []
